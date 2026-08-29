@@ -1,9 +1,12 @@
 __pycache__/
 *.pyc
-*.sqlite
 .env
 .venv/
 venv/
 *.log
 .DS_Store
 Thumbs.db
+
+# Uploaded dumps stay local; the checked-in sample is the exception.
+sql/*
+!sql/sample.sql

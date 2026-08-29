@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SQL Dump Viewbench</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>&#128202;</text></svg>">
+</head>
+<body>
+  <div class="bar" id="progress"></div>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SQ</div>
+        <div>
+          <div class="brand-name">Dump Viewbench</div>
+          <div class="brand-sub">no database required</div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <label class="dropzone" id="dropzone">
+          <input type="file" id="file-input" accept=".sql,.txt,.dump">
+          <strong>Drop a .sql dump</strong><br>opened in place, never uploaded
+        </label>
+        <label class="upload-link">
+          <input type="file" id="upload-input" accept=".sql,.txt,.dump">
+          or upload a copy to the server
+        </label>
+      </div>
+
+      <div class="side-search">
+        <input class="field" id="file-filter" type="search" placeholder="Filter files" autocomplete="off">
+      </div>
+
+      <div class="section-label">Files</div>
+      <div class="file-list" id="file-list"></div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <nav class="crumbs" id="crumbs"></nav>
+        <div class="stats" id="stats"></div>
+        <div class="tabs" id="tabs" hidden>
+          <button class="tab active" data-view="tables">Tables</button>
+          <button class="tab" data-view="diagram">Diagram</button>
+        </div>
+      </header>
+
+      <div class="scan" id="scan" hidden>
+        <div class="scan-track"><div class="scan-fill" id="scan-fill"></div></div>
+        <div class="scan-text" id="scan-text"></div>
+      </div>
+
+      <section class="content" id="content">
+        <div class="pane active" id="pane-welcome">
+          <div class="empty">
+            <div class="icon">&#128451;</div>
+            <h2>No dump selected</h2>
+            <p>Pick a file on the left, or drop a MySQL / PostgreSQL / SQLite dump to inspect its tables, rows and relationships.</p>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-tables">
+          <div class="toolbar">
+            <input class="field" id="table-filter" type="search" placeholder="Filter tables" autocomplete="off">
+            <div class="spacer"></div>
+            <span class="mono" id="table-count" style="color: var(--faint)"></span>
+          </div>
+          <div class="scroll">
+            <table class="table-list">
+              <thead>
+                <tr>
+                  <th>Table</th>
+                  <th>Keys</th>
+                  <th style="text-align:right">Columns</th>
+                  <th style="text-align:right">Rows</th>
+                </tr>
+              </thead>
+              <tbody id="table-rows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-diagram">
+          <div class="toolbar">
+            <input class="field" id="erd-focus" type="search" placeholder="Focus a table" autocomplete="off">
+            <label style="color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px">
+              <input type="checkbox" id="erd-columns" checked> show columns
+            </label>
+            <label style="color: var(--muted); font-size: 13px; display: flex; align-items: center; gap: 6px">
+              <input type="checkbox" id="erd-linked"> related tables only
+            </label>
+            <div class="spacer"></div>
+            <span class="mono" id="erd-count" style="color: var(--faint)"></span>
+          </div>
+          <div class="diagram-wrap">
+            <svg id="erd"></svg>
+            <div class="erd-legend">
+              <span><i style="background: var(--pk)"></i>primary key</span>
+              <span><i style="background: var(--fk)"></i>foreign key</span>
+              <span>drag to pan &middot; scroll to zoom</span>
+            </div>
+            <div class="erd-controls">
+              <button class="btn btn-icon" id="erd-in" title="Zoom in">+</button>
+              <button class="btn btn-icon" id="erd-out" title="Zoom out">&minus;</button>
+              <button class="btn btn-icon" id="erd-fit" title="Fit to screen">Fit</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-data">
+          <div class="toolbar">
+            <input class="field" id="row-filter" type="search" placeholder="Search rows" autocomplete="off">
+            <button class="btn" id="btn-structure">Structure</button>
+            <div class="spacer"></div>
+            <span class="mono" id="row-summary" style="color: var(--faint)"></span>
+          </div>
+          <div class="grid-wrap" id="grid-wrap">
+            <table class="grid">
+              <thead id="grid-head"></thead>
+              <tbody id="grid-body"></tbody>
+            </table>
+          </div>
+          <div class="pager">
+            <button class="btn" id="page-first">&laquo;</button>
+            <button class="btn" id="page-prev">Prev</button>
+            <span id="page-label"></span>
+            <button class="btn" id="page-next">Next</button>
+            <button class="btn" id="page-last">&raquo;</button>
+            <div class="spacer"></div>
+            <label>Rows
+              <select id="page-size">
+                <option>25</option>
+                <option selected>50</option>
+                <option>100</option>
+                <option>250</option>
+                <option>500</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="pane" id="pane-structure">
+          <div class="toolbar">
+            <button class="btn" id="btn-back-data">&larr; Back to data</button>
+          </div>
+          <div class="scroll"><div class="struct" id="struct"></div></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+  <script src="/static/sources.js"></script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

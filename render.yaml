@@ -1,10 +1,15 @@
 services:
   - type: web
-    name: sql-dump-explorer
-    env: python
+    name: sql-dump-viewbench
+    runtime: python
     plan: free
-    buildCommand: cd backend && pip install -r requirements.txt
-    startCommand: cd backend && uvicorn app:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: "3.12"
+      # Parsed dumps held in memory. Raise only if the instance has the RAM.
+      - key: CACHE_SIZE
+        value: "2"
+      - key: MAX_UPLOAD_MB
+        value: "128"
